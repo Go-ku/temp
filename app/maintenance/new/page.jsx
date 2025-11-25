@@ -1,0 +1,31 @@
+// app/maintenance/new/page.jsx
+import { connectToDatabase } from "@/lib/db/mongoose";
+import Property from "@/models/Property";
+import Lease from "@/models/Lease";
+import { createMaintenanceRequest } from "@/app/(actions)/maintenance";
+import MaintenanceForm from "@/components/forms/maintenance-form";
+
+export const dynamic = "force-dynamic";
+
+export default async function NewMaintenancePage() {
+  await connectToDatabase();
+
+  const [properties, leases] = await Promise.all([
+    Property.find({ isActive: true }).lean(),
+    Lease.find({})
+      .populate("property")
+      .populate("tenant")
+      .lean(),
+  ]);
+
+  return (
+    <div className="p-4 sm:p-6">
+      <MaintenanceForm
+        properties={properties}
+        leases={leases}
+        onSubmit={createMaintenanceRequest}
+      />
+    </div>
+  );
+}
+

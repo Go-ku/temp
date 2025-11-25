@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+#Option G — Landlord Income Dashboard (profit, ROI, advanced charts)
+#Option H — Full maintenance workflow for landlord + technicians
+#Option I — Add Lease Versioning (history of rent increases, renewals)
+#Option J — Smart Lease Expiry Notifications (cron + WhatsApp/email)
