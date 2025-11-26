@@ -10,6 +10,7 @@ import Payment from "@/models/Payment";
 import KpiCard from "@/components/dashboard/KpiCard";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import QuickLinks from "@/components/dashboard/QuickLinks";
+import SectionCard from "@/components/dashboard/SectionCard";
 function buildRevenueSeries(raw) {
   // Convert aggregation into [{label: "Jan", amount: 1234}, ...]
   const monthNames = [
@@ -96,8 +97,11 @@ export default async function AdminDashboardPage() {
   const revenueSeries = buildRevenueSeries(revenueRaw);
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+    <div className="p-4 sm:p-6 space-y-8 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-gray-500">Welcome back</p>
+        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+      </div>
 
       {/* KPI row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -125,10 +129,10 @@ export default async function AdminDashboardPage() {
       <RevenueChart data={revenueSeries} />
 
       {/* Outstanding invoices list */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm">
-        <h2 className="text-sm font-semibold mb-3">
-          Most Overdue / Outstanding Invoices
-        </h2>
+      <SectionCard
+        title="Most Overdue / Outstanding Invoices"
+        subtitle="Top invoices needing attention"
+      >
         <div className="space-y-2 text-sm">
           {outstandingInvoices.length === 0 && (
             <p className="text-gray-500">No outstanding invoices 🎉</p>
@@ -160,7 +164,7 @@ export default async function AdminDashboardPage() {
             );
           })}
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }

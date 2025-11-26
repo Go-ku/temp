@@ -8,6 +8,8 @@ import Invoice from "@/models/Invoice";
 import Payment from "@/models/Payment";
 import MaintenanceRequest from "@/models/MaintenanceRequest";
 import FloatingActions from "@/components/dashboard/FloatingActions";
+import KpiCard from "@/components/dashboard/KpiCard";
+import SectionCard from "@/components/dashboard/SectionCard";
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -39,8 +41,9 @@ export default async function LandlordDashboard() {
     .sort({ dueDate: 1 })
     .lean();
 
-  const upcomingInvoices = invoices.filter(
-    (i) => i.status === "unpaid" || i.status === "overdue"
+  const rentStatuses = ["pending", "partially_paid", "overdue", "unpaid"];
+  const upcomingInvoices = invoices.filter((i) =>
+    rentStatuses.includes(i.status)
   );
 
   const payments = await Payment.find({
@@ -105,10 +108,10 @@ export default async function LandlordDashboard() {
     0
   );
 
-  const kpiTotalPending = upcomingInvoices.reduce(
-    (sum, inv) => sum + (inv.amountDue - inv.amountPaid),
-    0
-  );
+  const kpiTotalPending = upcomingInvoices.reduce((sum, inv) => {
+    const remaining = inv.amountDue - inv.amountPaid;
+    return sum + (remaining > 0 ? remaining : 0);
+  }, 0);
 
   const kpiTotalProperties = properties.length;
 
@@ -119,83 +122,84 @@ export default async function LandlordDashboard() {
   // --------------------------
 
   return (
-    <div className="p-6 space-y-10 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-semibold">Landlord Dashboard</h1>
+    <div className="p-4 sm:p-6 space-y-8 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-gray-500">Welcome back</p>
+        <h1 className="text-2xl font-semibold">Landlord Dashboard</h1>
+      </div>
 
       {/* KPI CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-white border rounded-xl shadow-sm">
-          <p className="text-xs text-gray-500">Collected This Month</p>
-          <p className="text-xl font-semibold">
-            ZMW {kpiTotalCollected.toLocaleString()}
-          </p>
-        </div>
-
-        <div className="p-4 bg-white border rounded-xl shadow-sm">
-          <p className="text-xs text-gray-500">Pending/Overdue Rent</p>
-          <p className="text-xl font-semibold">
-            ZMW {kpiTotalPending.toLocaleString()}
-          </p>
-        </div>
-
-        <div className="p-4 bg-white border rounded-xl shadow-sm">
-          <p className="text-xs text-gray-500">Properties</p>
-          <p className="text-xl font-semibold">{kpiTotalProperties}</p>
-        </div>
-
-        <div className="p-4 bg-white border rounded-xl shadow-sm">
-          <p className="text-xs text-gray-500">Active Tenants</p>
-          <p className="text-xl font-semibold">{kpiTotalTenants}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          label="Collected This Month"
+          value={`ZMW ${kpiTotalCollected.toLocaleString()}`}
+          hint="Successful payments"
+        />
+        <KpiCard
+          label="Pending / Overdue"
+          value={`ZMW ${kpiTotalPending.toLocaleString()}`}
+          hint="Unpaid rent balance"
+        />
+        <KpiCard
+          label="Properties"
+          value={kpiTotalProperties}
+          hint="Units you manage"
+        />
+        <KpiCard
+          label="Active Tenants"
+          value={kpiTotalTenants}
+          hint="Current leases"
+        />
       </div>
 
       {/* PROPERTIES */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Your Properties</h2>
-
-        <div className="grid gap-4">
+      <SectionCard
+        title="Your Properties"
+        subtitle="Properties you own and manage"
+      >
+        <div className="grid gap-3">
           {properties.map((p) => (
             <Link
               key={p._id}
               href={`/properties/${p._id}`}
-              className="block border rounded-xl p-4 bg-white shadow-sm hover:bg-gray-50"
+              className="block border rounded-lg p-4 bg-white hover:border-gray-300 transition"
             >
-              <div className="flex justify-between">
-                <div>
+              <div className="flex justify-between gap-3">
+                <div className="space-y-1">
                   <p className="font-semibold">{p.title}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     {p.address?.town}, {p.address?.city}
                   </p>
                   <p className="text-xs text-gray-400">{p.type}</p>
                 </div>
 
-                <div>
-                  <Badge variant="secondary">
+                <Badge variant="secondary" className="self-start">
                   {
                     leases.filter((l) => String(l.property) === String(p._id))
                       .length
                   }{" "}
                   tenants
                 </Badge>
-                </div>
               </div>
             </Link>
           ))}
         </div>
-      </div>
+      </SectionCard>
 
       {/* UPCOMING INVOICES */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Upcoming Rent</h2>
+      <SectionCard
+        title="Upcoming Rent"
+        subtitle="Next invoices due from tenants"
+      >
         <div className="space-y-2">
           {upcomingInvoices.slice(0, 5).map((inv) => (
             <Link
               key={inv._id}
               href={`/invoices/${inv._id}`}
-              className="block p-3 border rounded-lg bg-white hover:bg-gray-50"
+              className="block p-3 border rounded-lg hover:border-gray-300 transition"
             >
               <div className="flex justify-between">
-                <div>
+                <div className="space-y-1">
                   <p className="font-medium">Invoice {inv.reference}</p>
                   <p className="text-xs text-gray-500">
                     Due: {new Date(inv.dueDate).toDateString()}
@@ -216,17 +220,16 @@ export default async function LandlordDashboard() {
             </Link>
           ))}
         </div>
-      </div>
+      </SectionCard>
 
       {/* RECENT PAYMENTS */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Recent Payments</h2>
+      <SectionCard title="Recent Payments" subtitle="Latest successful receipts">
         <div className="space-y-2">
           {payments.slice(0, 5).map((p) => (
             <Link
               key={p._id}
               href={`/payments/${p._id}`}
-              className="block p-3 border rounded-lg bg-white hover:bg-gray-50"
+              className="block p-3 border rounded-lg hover:border-gray-300 transition"
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -241,20 +244,19 @@ export default async function LandlordDashboard() {
             </Link>
           ))}
         </div>
-      </div>
+      </SectionCard>
 
       {/* MAINTENANCE */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Maintenance</h2>
+      <SectionCard title="Maintenance" subtitle="Recent maintenance tickets">
         <div className="space-y-2">
           {maintenanceRequests.slice(0, 5).map((m) => (
             <Link
               key={m._id}
               href={`/maintenance/${m._id}`}
-              className="block p-3 border rounded-lg bg-white hover:bg-gray-50"
+              className="block p-3 border rounded-lg hover:border-gray-300 transition"
             >
               <div className="flex justify-between">
-                <div>
+                <div className="space-y-1">
                   <p className="font-medium">{m.title}</p>
                   <p className="text-xs text-gray-500">{m.property.title}</p>
                 </div>
@@ -264,7 +266,7 @@ export default async function LandlordDashboard() {
             </Link>
           ))}
         </div>
-      </div>
+      </SectionCard>
       <FloatingActions role="landlord" />
     </div>
   );

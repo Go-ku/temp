@@ -8,6 +8,7 @@ import Tenant from "@/models/Tenant";
 import Lease from "@/models/Lease";
 
 import InvoiceTable from "@/components/invoices/invoices-table";
+import SectionCard from "@/components/dashboard/SectionCard";
 
 export default async function InvoicesPage() {
   await connectToDatabase();
@@ -51,9 +52,17 @@ export default async function InvoicesPage() {
   const safeInvoices = JSON.parse(JSON.stringify(invoices));
 
   return (
-    <div className="p-4 sm:p-6">
-      <h1 className="text-xl font-semibold mb-4">Invoices</h1>
-      <InvoiceTable data={safeInvoices} />
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-gray-500">Billing</p>
+        <h1 className="text-2xl font-semibold">Invoices</h1>
+        <p className="text-sm text-gray-600">
+          All invoices across your portfolio.
+        </p>
+      </div>
+      <SectionCard title="All Invoices">
+        <InvoiceTable data={safeInvoices} />
+      </SectionCard>
     </div>
   );
 }

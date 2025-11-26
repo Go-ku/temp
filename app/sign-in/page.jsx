@@ -2,11 +2,13 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function SignInPage({ searchParams }) {
-  const passwordUpdated = searchParams?.passwordUpdated;
+export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const passwordUpdated = searchParams?.get("passwordUpdated");
 
   const [error, setError] = useState("");
 

@@ -11,6 +11,7 @@ import QuickLinks from "@/components/dashboard/QuickLinks";
 import Link from "next/link";
 import { Button } from "@/components/ui/button"; 
 import PayNowWrapper from "@/components/payments/PayNowWrapper";
+import SectionCard from "@/components/dashboard/SectionCard";
 
 export default async function TenantDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -52,8 +53,11 @@ export default async function TenantDashboardPage() {
   );
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
-      <h1 className="text-xl font-semibold">Welcome, {tenant.fullName}</h1>
+    <div className="p-4 sm:p-6 space-y-8 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-gray-500">Welcome back</p>
+        <h1 className="text-2xl font-semibold">Tenant Dashboard</h1>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -78,26 +82,32 @@ export default async function TenantDashboardPage() {
         />
       </div>
 
-          {nextInvoice && (
-        <PayNowWrapper
-          invoice={{
-            _id: nextInvoice._id,
-            reference: nextInvoice.reference,
-            outstanding: nextInvoice.amountDue - nextInvoice.amountPaid,
-          }}
-        />
-      )}
       {nextInvoice && (
-        <Link href={`/pay/${nextInvoice._id}`}>
-          <Button className="w-full sm:w-auto">Pay Now</Button>
-        </Link>
+        <SectionCard
+          title="Next Payment"
+          subtitle="Quickly settle your upcoming rent"
+          action={
+            <Link href={`/pay/${nextInvoice._id}`}>
+              <Button size="sm">Pay Now</Button>
+            </Link>
+          }
+        >
+          <PayNowWrapper
+            invoice={{
+              _id: nextInvoice._id,
+              reference: nextInvoice.reference,
+              outstanding: nextInvoice.amountDue - nextInvoice.amountPaid,
+            }}
+          />
+        </SectionCard>
       )}
 
-      <QuickLinks role="tenant" />
+      <SectionCard title="Quick Links">
+        <QuickLinks role="tenant" />
+      </SectionCard>
 
       {/* Recent payments list */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm">
-        <h2 className="text-sm font-semibold mb-3">Recent Payments</h2>
+      <SectionCard title="Recent Payments" subtitle="Latest successful payments">
         <div className="space-y-2 text-sm">
           {payments.length === 0 && (
             <p className="text-gray-500">No payments recorded yet.</p>
@@ -123,7 +133,7 @@ export default async function TenantDashboardPage() {
             </div>
           ))}
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }

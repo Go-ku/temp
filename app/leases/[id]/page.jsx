@@ -11,6 +11,7 @@ import Payment from "@/models/Payment";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import SectionCard from "@/components/dashboard/SectionCard";
 
 import RentIncreaseModal from "@/components/leases/RentIncreaseModal.jsx";
 import TerminateLeaseModal from "@/components/leases/TerminateLeaseModal";
@@ -75,11 +76,11 @@ export default async function LeaseDetailsPage({ params }) {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-8">
-
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-8">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
         <div>
+          <p className="text-sm text-gray-500">Lease overview</p>
           <h1 className="text-2xl font-semibold">Lease Details</h1>
           <p className="text-gray-600">
             {lease.property.title} — Tenant: {lease.tenant.fullName}
@@ -92,44 +93,48 @@ export default async function LeaseDetailsPage({ params }) {
       </div>
 
       {/* QUICK ACTIONS */}
-      <div className="flex gap-2 flex-wrap">
-        <RentIncreaseModal leaseId={lease._id} />
-        <TerminateLeaseModal leaseId={lease._id} />
-        <DeductDepositModal leaseId={lease._id} />
-<RefundDepositModal leaseId={lease._id} />
-<RenewLeaseModal lease={lease} />
+      <SectionCard title="Actions" subtitle="Manage this lease">
+        <div className="flex gap-2 flex-wrap">
+          <RentIncreaseModal leaseId={lease._id} />
+          <TerminateLeaseModal leaseId={lease._id} />
+          <DeductDepositModal leaseId={lease._id} />
+          <RefundDepositModal leaseId={lease._id} />
+          <RenewLeaseModal lease={lease} />
 
+          <Link href={`/invoices?leaseId=${lease._id}`}>
+            <Button size="sm" variant="outline">
+              View Invoices
+            </Button>
+          </Link>
 
-        <Link href={`/invoices?leaseId=${lease._id}`}>
-          <Button size="sm" variant="outline">View Invoices</Button>
-        </Link>
+          <Link href={`/payments?leaseId=${lease._id}`}>
+            <Button size="sm" variant="outline">
+              View Payments
+            </Button>
+          </Link>
 
-        <Link href={`/payments?leaseId=${lease._id}`}>
-          <Button size="sm" variant="outline">View Payments</Button>
-        </Link>
+          <Link href={`/tenant/${lease.tenant._id}`}>
+            <Button size="sm" variant="outline">
+              Tenant Profile
+            </Button>
+          </Link>
 
-        <Link href={`/tenant/${lease.tenant._id}`}>
-          <Button size="sm" variant="outline">Tenant Profile</Button>
-        </Link>
-
-        <Link href={`/properties/${lease.property._id}`}>
-          <Button size="sm" variant="outline">Property</Button>
-        </Link>
-        <Link href={`/leases/${lease._id}/agreement`} target="_blank">
-  <Button variant="outline" size="sm">
-    Download Lease Agreement
-  </Button>
-  
-</Link>
-
-      </div>
+          <Link href={`/properties/${lease.property._id}`}>
+            <Button size="sm" variant="outline">
+              Property
+            </Button>
+          </Link>
+          <Link href={`/leases/${lease._id}/agreement`} target="_blank">
+            <Button variant="outline" size="sm">
+              Download Lease Agreement
+            </Button>
+          </Link>
+        </div>
+      </SectionCard>
 
       {/* LEASE SUMMARY */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm space-y-3">
-        <h2 className="text-lg font-semibold">Summary</h2>
-
+      <SectionCard title="Summary" subtitle="Key lease details">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-
           <div>
             <p className="text-xs text-gray-500">Tenant</p>
             <p className="font-medium">{lease.tenant.fullName}</p>
@@ -177,12 +182,10 @@ export default async function LeaseDetailsPage({ params }) {
             <p className="font-medium">{lease.rentFrequency}</p>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* FINANCIAL SUMMARY */}
-      <div className="border rounded-xl p-4 bg-white shadow-sm space-y-3">
-        <h2 className="text-lg font-semibold">Financial Overview</h2>
-
+      <SectionCard title="Financial Overview" subtitle="Rent and balance">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
           <div>
             <p className="text-xs text-gray-500">Outstanding Balance</p>
@@ -207,79 +210,79 @@ export default async function LeaseDetailsPage({ params }) {
             </p>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* INVOICES LIST */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Invoices</h2>
+      <SectionCard title="Invoices" subtitle="All invoices for this lease">
+        <div className="space-y-2">
+          {invoices.map((inv) => (
+            <Link
+              key={inv._id}
+              href={`/invoices/${inv._id}`}
+              className="block border rounded-lg p-3 hover:border-gray-300 transition text-sm"
+            >
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-medium">Invoice {inv.reference}</p>
+                  <p className="text-xs text-gray-500">
+                    Due {new Date(inv.dueDate).toLocaleDateString("en-ZM")}
+                  </p>
+                </div>
 
-        {invoices.map((inv) => (
-          <Link
-            key={inv._id}
-            href={`/invoices/${inv._id}`}
-            className="block border rounded-lg p-3 hover:bg-gray-50 text-sm"
-          >
-            <div className="flex justify-between">
-              <div>
-                <p className="font-medium">Invoice {inv.reference}</p>
-                <p className="text-xs text-gray-500">
-                  Due {new Date(inv.dueDate).toLocaleDateString("en-ZM")}
-                </p>
+                <Badge
+                  variant="outline"
+                  className={
+                    inv.status === "paid"
+                      ? "bg-green-100 text-green-800"
+                      : inv.status === "overdue"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }
+                >
+                  {inv.status}
+                </Badge>
               </div>
-
-              <Badge
-                variant="outline"
-                className={
-                  inv.status === "paid"
-                    ? "bg-green-100 text-green-800"
-                    : inv.status === "overdue"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-yellow-100 text-yellow-800"
-                }
-              >
-                {inv.status}
-              </Badge>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      </SectionCard>
 
       {/* PAYMENTS LIST */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Payments</h2>
+      <SectionCard title="Payments" subtitle="All payments for this lease">
+        <div className="space-y-2">
+          {payments.map((pay) => (
+            <Link
+              key={pay._id}
+              href={`/payments/${pay._id}`}
+              className="block border rounded-lg p-3 hover:border-gray-300 transition text-sm"
+            >
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-medium">
+                    ZMW {pay.amount.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(pay.datePaid).toLocaleDateString("en-ZM")}
+                  </p>
+                </div>
 
-        {payments.map((pay) => (
-          <Link
-            key={pay._id}
-            href={`/payments/${pay._id}`}
-            className="block border rounded-lg p-3 hover:bg-gray-50 text-sm"
-          >
-            <div className="flex justify-between">
-              <div>
-                <p className="font-medium">
-                  ZMW {pay.amount.toLocaleString()}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(pay.datePaid).toLocaleDateString("en-ZM")}
-                </p>
+                <Badge
+                  variant="outline"
+                  className={
+                    pay.status === "successful"
+                      ? "bg-green-100 text-green-800"
+                      : pay.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }
+                >
+                  {pay.status}
+                </Badge>
               </div>
-
-              <Badge
-                variant="outline"
-                className={
-                  pay.status === "successful"
-                    ? "bg-green-100 text-green-800"
-                    : pay.status === "pending"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
-                }
-              >
-                {pay.status}
-              </Badge>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      </SectionCard>
     </div>
   );
 }

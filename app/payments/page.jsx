@@ -7,6 +7,7 @@ import Property from "@/models/Property";
 import "@/models/Tenant"; // register for populate
 import "@/models/Invoice"; // register for populate
 import PaymentsTable from "@/components/payments/payments-table";
+import SectionCard from "@/components/dashboard/SectionCard";
 
 export const metadata = {
   title: "Payments",
@@ -69,10 +70,18 @@ export default async function PaymentsPage() {
   const safePayments = JSON.parse(JSON.stringify(payments));
 
   return (
-    <div className="p-4 sm:p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Payments</h1>
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-gray-500">Financials</p>
+        <h1 className="text-2xl font-semibold">Payments</h1>
+        <p className="text-sm text-gray-600">
+          Track all received and pending payments.
+        </p>
+      </div>
 
-      <PaymentsTable data={safePayments} />
+      <SectionCard title="All Payments">
+        <PaymentsTable data={safePayments} />
+      </SectionCard>
     </div>
   );
 }
