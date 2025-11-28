@@ -5,7 +5,8 @@ import Payment from "@/models/Payment";
 export async function GET(req, { params }) {
   await connectToDatabase();
 
-  const payment = await Payment.findById(params.id).lean();
+  const {id} = await params || {};
+  const payment = await Payment.findById(id).lean();
 
   if (!payment) {
     return NextResponse.json({
