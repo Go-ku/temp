@@ -6,7 +6,10 @@ import Lease from "@/models/Lease";
 import Invoice from "@/models/Invoice";
 import Payment from "@/models/Payment";
 import MaintenanceRequest from "@/models/MaintenanceRequest";
-import DashboardClient from "@/components/dashboard/DashboardClient";// We will create this next
+import DashboardClient from "@/components/dashboard/DashboardClient";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function LandlordDashboard() {
   const session = await getServerSession(authOptions);
@@ -52,7 +55,6 @@ export default async function LandlordDashboard() {
     .lean();
 
   // --- DATA PROCESSING ---
-  
   // 1. Rent Trend Calculation
   const now = new Date();
   const rentTrend = [];
@@ -95,17 +97,33 @@ export default async function LandlordDashboard() {
 
   // Serialize data to avoid "Only plain objects..." errors in Next.js
   const serialize = (data) => JSON.parse(JSON.stringify(data));
+  const safeRentTrend = rentTrend.map(({ name, total }) => ({ name, total }));
 
   return (
-    <DashboardClient 
-      user={session.user}
-      stats={stats}
-      rentTrend={serialize(rentTrend)}
-      properties={serialize(properties)}
-      upcomingInvoices={serialize(upcomingInvoices)}
-      recentPayments={serialize(payments)}
-      maintenanceRequests={serialize(maintenanceRequests)}
-      leaseCount={leases.length}
-    />
+    <SidebarProvider
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      }}
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader title="Landlord Dashboard" />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <DashboardClient
+              user={session.user}
+              stats={stats}
+              rentTrend={safeRentTrend}
+              properties={serialize(properties)}
+              upcomingInvoices={serialize(upcomingInvoices)}
+              recentPayments={serialize(payments)}
+              maintenanceRequests={serialize(maintenanceRequests)}
+              leaseCount={leases.length}
+            />
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
