@@ -62,6 +62,11 @@ export default async function LeaseDetailsPage({ params }) {
   const nextInvoice = invoices.find(
     (i) => i.status === "pending" || i.status === "partially_paid"
   ) || null;
+  const leaseId = lease._id.toString();
+  const safeLeaseForRenewal = {
+    _id: leaseId,
+    rentAmount: lease.rentAmount,
+  };
 
   const statusVariant = (status) => {
     switch (status) {
@@ -95,36 +100,36 @@ export default async function LeaseDetailsPage({ params }) {
       {/* QUICK ACTIONS */}
       <SectionCard title="Actions" subtitle="Manage this lease">
         <div className="flex gap-2 flex-wrap">
-          <RentIncreaseModal leaseId={lease._id} />
-          <TerminateLeaseModal leaseId={lease._id} />
-          <DeductDepositModal leaseId={lease._id} />
-          <RefundDepositModal leaseId={lease._id} />
-          <RenewLeaseModal lease={lease} />
+          <RentIncreaseModal leaseId={leaseId} />
+          <TerminateLeaseModal leaseId={leaseId} />
+          <DeductDepositModal leaseId={leaseId} />
+          <RefundDepositModal leaseId={leaseId} />
+          <RenewLeaseModal lease={safeLeaseForRenewal} />
 
-          <Link href={`/invoices?leaseId=${lease._id}`}>
+          <Link href={`/invoices?leaseId=${leaseId}`}>
             <Button size="sm" variant="outline">
               View Invoices
             </Button>
           </Link>
 
-          <Link href={`/payments?leaseId=${lease._id}`}>
+          <Link href={`/payments?leaseId=${leaseId}`}>
             <Button size="sm" variant="outline">
               View Payments
             </Button>
           </Link>
 
-          <Link href={`/tenant/${lease.tenant._id}`}>
+          <Link href={`/tenant/${lease.tenant._id.toString()}`}>
             <Button size="sm" variant="outline">
               Tenant Profile
             </Button>
           </Link>
 
-          <Link href={`/properties/${lease.property._id}`}>
+          <Link href={`/properties/${lease.property._id.toString()}`}>
             <Button size="sm" variant="outline">
               Property
             </Button>
           </Link>
-          <Link href={`/leases/${lease._id}/agreement`} target="_blank">
+          <Link href={`/leases/${leaseId}/agreement`} target="_blank">
             <Button variant="outline" size="sm">
               Download Lease Agreement
             </Button>

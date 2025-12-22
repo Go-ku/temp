@@ -20,7 +20,8 @@ export async function createUser(data) {
     await connectToDatabase();
   try {
     const user = await User.create(data);
-    return { success: true, data: user };
+    const safeUser = JSON.parse(JSON.stringify(user));
+    return { success: true, data: safeUser };
   } catch (err) {
     return { success: false, errors: err.errors || err.message };
   }

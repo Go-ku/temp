@@ -199,36 +199,36 @@ const {id} = await params || {};
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Link href={`/leases/${lease._id}`}>
+                  <Link href={`/leases/${lease._id.toString()}`}>
                     <Button size="sm" variant="outline">
                       View Lease
                     </Button>
                   </Link>
 
-                  <Link href={`/invoices?leaseId=${lease._id}`}>
+                  <Link href={`/invoices?leaseId=${lease._id.toString()}`}>
                     <Button size="sm" variant="outline">
                       View Invoices
                     </Button>
                   </Link>
 
-                  <Link href={`/payments?leaseId=${lease._id}`}>
+                  <Link href={`/payments?leaseId=${lease._id.toString()}`}>
                     <Button size="sm" variant="outline">
                       View Payments
                     </Button>
                   </Link>
                   <div className="flex flex-wrap gap-2 pt-2">
-  <Link href={`/leases/${lease._id}`}>
+  <Link href={`/leases/${lease._id.toString()}`}>
     <Button size="sm" variant="outline">View Lease</Button>
   </Link>
 
-  <RentIncreaseModal leaseId={lease._id} />
-  <TerminateLeaseModal leaseId={lease._id} />
+  <RentIncreaseModal leaseId={lease._id.toString()} />
+  <TerminateLeaseModal leaseId={lease._id.toString()} />
 
-  <Link href={`/invoices?leaseId=${lease._id}`}>
+  <Link href={`/invoices?leaseId=${lease._id.toString()}`}>
     <Button size="sm" variant="outline">Invoices</Button>
   </Link>
 
-  <Link href={`/payments?leaseId=${lease._id}`}>
+  <Link href={`/payments?leaseId=${lease._id.toString()}`}>
     <Button size="sm" variant="outline">Payments</Button>
   </Link>
 </div>

@@ -101,17 +101,23 @@ export default function PropertyForm({
           ? Number(values.defaultRentAmount)
           : undefined,
       };
-
+      console.log("Submitting property:", payload);
       const result = await onSubmit(payload);
 
       if (result?.success) {
-        if (redirectTo) {
-          router.push(redirectTo);
-          return;
+        const target =
+          redirectTo || (result?.data?._id && `/properties/${result.data._id}`);
+        if (target) {
+          router.push(target);
+        } else {
+          form.reset(defaults);
         }
-        form.reset(defaults);
-        // you could also show a toast here
       } else {
+        const errorMsg =
+          typeof result?.errors === "string"
+            ? result.errors
+            : result?.errors?.code || "Unable to save property";
+        form.setError("code", { message: errorMsg });
         console.error(result?.errors);
       }
     });

@@ -70,6 +70,10 @@ const PropertySchema = new Schema(
       type: Boolean,
       default: true,
     },
+    isOccupied: {
+      type: Boolean,
+      default: false,
+    },
     images: [
       {
         url: String,

@@ -4,7 +4,13 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import Payment from "@/models/Payment";
 import Lease from "@/models/Lease";
 import { updateInvoiceFromPayments } from "@/app/(actions)/invoices";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+  generateReceiptForPayment,
+  sendPaymentReceiptEmail,
+  sendPaymentReceiptSms,
+} from "@/lib/payments/receipts";
 export async function createPayment(data) {
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Unauthorized");
@@ -31,13 +37,10 @@ export async function createPayment(data) {
 
     const payment = await Payment.create(data);
     if (data.invoice) {
-  await updateInvoiceFromPayments(data.invoice);
-}
-await generateReceiptForPayment(payment._id);
-  await sendPaymentReceiptEmail(payment._id);
-  await sendPaymentReceiptSms(payment._id);
-
-    return { success: true, data: payment };
+      await updateInvoiceFromPayments(data.invoice);
+    }
+    const safePayment = JSON.parse(JSON.stringify(payment));
+    return { success: true, data: safePayment };
   } catch (err) {
     return { success: false, errors: err.errors || err.message };
   }

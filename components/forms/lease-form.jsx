@@ -76,9 +76,15 @@ export default function LeaseForm({
       };
 
       const result = await onSubmit(payload);
+      console.log("LeaseForm submission result:", result);
       if (result?.success) {
         form.reset();
       } else {
+        const message =
+          typeof result?.errors === "string"
+            ? result.errors
+            : result?.errors?.message || "Unable to create lease";
+        form.setError("root", { message });
         console.error(result?.errors);
       }
     });

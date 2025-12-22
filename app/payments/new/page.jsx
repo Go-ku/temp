@@ -15,10 +15,11 @@ export default async function NewPaymentPage() {
     .populate("tenant")
     .populate("property")
     .lean();
+  const safeLeases = JSON.parse(JSON.stringify(leases));
 
   return (
     <div className="p-4 sm:p-6">
-      <PaymentForm leases={leases} onSubmit={createPayment} />
+      <PaymentForm leases={safeLeases} onSubmit={createPayment} />
     </div>
   );
 }

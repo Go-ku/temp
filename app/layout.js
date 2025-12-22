@@ -2,7 +2,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TopNav from "@/components/layout/TopNav";
 import AuthProvider from "@/components/providers/AuthProvider";
-
+import { SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,8 +28,17 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <div className="min-h-screen bg-gray-50 text-slate-900">
-            <TopNav />
-            <main className="pt-16">{children}</main>
+            <SidebarProvider
+              style={{
+                "--sidebar-width": "calc(var(--spacing) * 72)",
+                "--header-height": "calc(var(--spacing) * 12)",
+              }}
+            >
+              <AppSidebar variant="inset" />
+              <SidebarInset>
+                <main className="">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
           </div>
         </AuthProvider>
       </body>

@@ -13,9 +13,15 @@ export async function createProperty(data) {
   try {
     const property = await Property.create(data);
     revalidatePath("/properties");
-    redirect(`/properties/${property._id}`);
-    
+    return { success: true, data: property };
   } catch (err) {
+    if (err?.code === 11000 && err?.keyPattern?.code) {
+      return {
+        success: false,
+        errors: { code: "This property code already exists. Please use a unique code." },
+      };
+    }
+
     return { success: false, errors: err.errors || err.message };
   }
 }

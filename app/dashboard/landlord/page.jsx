@@ -79,7 +79,7 @@ export default async function LandlordDashboard() {
   // 2. KPI Calculations
   const thisMonth = now.getMonth();
   const thisYear = now.getFullYear();
-  
+
   const paymentsThisMonth = payments.filter((p) => {
     const d = new Date(p.datePaid);
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
@@ -100,30 +100,22 @@ export default async function LandlordDashboard() {
   const safeRentTrend = rentTrend.map(({ name, total }) => ({ name, total }));
 
   return (
-    <SidebarProvider
-      style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-      }}
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Landlord Dashboard" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <DashboardClient
-              user={session.user}
-              stats={stats}
-              rentTrend={safeRentTrend}
-              properties={serialize(properties)}
-              upcomingInvoices={serialize(upcomingInvoices)}
-              recentPayments={serialize(payments)}
-              maintenanceRequests={serialize(maintenanceRequests)}
-              leaseCount={leases.length}
-            />
-          </div>
+    <>
+      <SiteHeader title="Landlord Dashboard" />
+      <div className="flex flex-1 flex-col">
+        <div className="@container/main flex flex-1 flex-col gap-2">
+          <DashboardClient
+            user={session.user}
+            stats={stats}
+            rentTrend={safeRentTrend}
+            properties={serialize(properties)}
+            upcomingInvoices={serialize(upcomingInvoices)}
+            recentPayments={serialize(payments)}
+            maintenanceRequests={serialize(maintenanceRequests)}
+            leaseCount={leases.length}
+          />
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </>
   );
 }

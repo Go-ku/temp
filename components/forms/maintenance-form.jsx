@@ -56,7 +56,7 @@ export default function MaintenanceForm({
     startTransition(async () => {
       const payload = {
         property: values.property,
-        lease: values.lease || undefined,
+        lease: values.lease && values.lease !== "none" ? values.lease : undefined,
         title: values.title,
         description: values.description || undefined,
         category: values.category,
@@ -113,8 +113,8 @@ export default function MaintenanceForm({
                       <SelectValue placeholder="Select lease" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
                     {leases.map((l) => (
                       <SelectItem key={l._id} value={l._id}>
                         {l.tenant?.fullName} — {l.property?.title}

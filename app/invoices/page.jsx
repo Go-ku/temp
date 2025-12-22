@@ -8,6 +8,7 @@ import Tenant from "@/models/Tenant";
 import Lease from "@/models/Lease"; // Although unused, kept for context
 
 // UI Components
+import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DollarSign, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import InvoiceTable from "@/components/invoices/invoices-table"; // Assumed component
@@ -72,8 +73,9 @@ export default async function InvoicesPage() {
   const safeInvoices = JSON.parse(JSON.stringify(invoices));
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
-      
+    <>
+      <SiteHeader title="Invoices" />
+    <div className="p-4 sm:p-8 space-y-8 max-w-auto ">
       {/* HEADER SECTION */}
       <div className="flex flex-col gap-1 border-b pb-4">
         <h1 className="text-3xl font-bold tracking-tight">🧾 Invoices & Billing</h1>
@@ -122,8 +124,11 @@ export default async function InvoicesPage() {
           <InvoiceTable data={safeInvoices} />
         </CardContent>
       </Card>
+
     </div>
-  );
+    </>
+      );
+
 }
 
 // -----------------------------------------------------------

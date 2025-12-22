@@ -9,8 +9,20 @@ export default function usePaymentStatus(paymentId, interval = 4000) {
     let isMounted = true;
 
     async function checkStatus() {
+      if (!paymentId) return;
+
       try {
         const res = await fetch(`/api/payments/status/${paymentId}`);
+        const isJson = res.headers
+          .get("content-type")
+          ?.includes("application/json");
+
+        if (!res.ok || !isJson) {
+          // If the endpoint fails or returns no JSON, keep last status.
+          console.warn("Status check returned non-JSON or error", res.status);
+          return;
+        }
+
         const data = await res.json();
 
         if (!data.success) return;

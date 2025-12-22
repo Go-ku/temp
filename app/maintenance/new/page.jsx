@@ -19,6 +19,10 @@ export default async function NewMaintenancePage() {
       .lean(),
   ]);
 
+  // Ensure plain JSON-safe objects for client components
+  const safeProperties = JSON.parse(JSON.stringify(properties));
+  const safeLeases = JSON.parse(JSON.stringify(leases));
+
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col gap-1">
@@ -31,8 +35,8 @@ export default async function NewMaintenancePage() {
 
       <SectionCard title="Request Details">
         <MaintenanceForm
-          properties={properties}
-          leases={leases}
+          properties={safeProperties}
+          leases={safeLeases}
           onSubmit={createMaintenanceRequest}
         />
       </SectionCard>

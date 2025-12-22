@@ -16,7 +16,7 @@ import {
   Select, SelectTrigger, SelectValue,
   SelectContent, SelectItem,
 } from "@/components/ui/select";
-
+import { useRouter } from "next/navigation";
 const METHODS = [
   { key: "cash", label: "Cash" },
   { key: "bank_transfer", label: "Bank Transfer" },
@@ -27,13 +27,13 @@ const METHODS = [
   { key: "other", label: "Other" },
 ];
 
-export default function PaymentForm({ leases = [], onSubmit }) {
+export default function PaymentForm({ leases = [], onSubmit, defaultLeaseId = "" }) {
   const [isPending, startTransition] = useTransition();
-
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      lease: "",
+      lease: defaultLeaseId,
       amount: "",
       method: "",
       receiptNumber: "",
@@ -56,8 +56,24 @@ export default function PaymentForm({ leases = [], onSubmit }) {
       };
 
       const result = await onSubmit(payload);
-      if (result?.success) form.reset();
-      else console.error(result.errors);
+      console.log("PaymentForm submission result:", result);
+      if (result?.success) {
+        const target =
+          result?.data?.property && `/properties/${result.data.property}`;
+        if (target) {
+          router.push(target);
+        } else {
+          form.reset();
+        }
+      } else {
+        const errorMsg =
+          typeof result?.errors === "string"
+            ? result.errors
+            : result?.errors?.code || "Unable to save payment";
+        form.setError("code", { message: errorMsg });
+        console.error(result?.errors);
+      }
+     
     });
   };
 

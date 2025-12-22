@@ -12,17 +12,57 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { onboardTenant } from "./tenantOnboard";
 
+async function generateLeaseRef() {
+  // Keep trying until we find an unused ref
+  let attempt = 0;
+  while (attempt < 5) {
+    const ref = `LEASE-${Math.random().toString(36).slice(-6).toUpperCase()}`;
+    // Use exists to avoid fetching full doc
+    const exists = await Lease.exists({ leaseRef: ref });
+    if (!exists) return ref;
+    attempt += 1;
+  }
+  // Fallback to ObjectId-based ref if random collisions somehow happen
+  const fallback = `LEASE-${new Date().getTime().toString(36).toUpperCase()}`;
+  return fallback;
+}
+
 export async function createLease(data) {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Unauthorized");
   await connectToDatabase();
   try {
+    // Ensure a unique leaseRef to avoid duplicate key errors
+    data.leaseRef = data?.leaseRef || (await generateLeaseRef());
+
+    // Landlords (and admins) should create active leases; tenants create pending
+    const isLandlord =
+      session.user.roles?.includes("landlord") ||
+      session.user.roles?.includes("admin");
+    data.status = data.status || (isLandlord ? "active" : "pending");
+
     const lease = await Lease.create(data);
-    await onboardTenant(formData.tenant);
+    if (data?.tenant) {
+      await onboardTenant(data.tenant);
+    }
+
+    // Mark property as occupied when a landlord creates the lease
+    if (isLandlord && data?.property) {
+      await Property.findByIdAndUpdate(data.property, { isOccupied: true });
+    }
+
     await createInitialInvoice(lease._id);
-revalidatePath("/leases");
-    return { success: true, data: lease };
+    revalidatePath("/leases");
+    const safeLease = JSON.parse(JSON.stringify(lease));
+    return { success: true, data: safeLease };
   } catch (err) {
+    if (err?.code === 11000) {
+      return {
+        success: false,
+        errors:
+          "A lease reference already exists. Please try again or contact support.",
+      };
+    }
     return { success: false, errors: err.errors || err.message };
   }
 }

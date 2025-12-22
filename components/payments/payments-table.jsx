@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DataTable from "../data-table";// your reusable TanStack table
+import {DataTable} from "../data-table";// your reusable TanStack table
 
 export default function PaymentsTable({ data }) {
   const [search, setSearch] = useState("");
