@@ -48,7 +48,8 @@ async function deleteAction(id) {
 export const dynamic = "force-dynamic";
 
 export default async function PropertyDetailsPage({ params, searchParams }) {
-  const { id } = (await params) || {};
+  const { id } = await params || {};
+  const searchTerm = await searchParams || {};
   if (!id)
     return <div className="p-4 text-red-500">Property ID missing.</div>;
 
@@ -80,8 +81,7 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
   const hasActiveLease = activeLeases.length > 0;
   const primaryLease = leases[0] || null;
   const primaryTenant = primaryLease?.tenant || null;
-  const resolvedSearchParams = (await searchParams) || {};
-  const selectedTab = resolvedSearchParams?.view || "overview";
+  const selectedTab = searchTerm?.view || "overview";
   const leaseOptions = leases.map((l) => ({
     id: l._id.toString(),
     label: `${l.tenant?.fullName || "Lease"} (${l.status})`,
@@ -101,30 +101,22 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
     : "—";
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-8 max-w-auto">
       
       {/* HEADER & ACTIONS */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Building className="h-6 w-6 text-gray-600" />
-            {property.title}
+            {propertyData.title}
           </h1>
-          <p className="text-md text-gray-500 mt-1">Code: **{property.code || "N/A"}**</p>
+          <p className="text-md text-gray-500 mt-1">Code: {propertyData.code || "N/A"}</p>
         </div>
 
         {/* ACTION BUTTONS */}
         <div className="flex gap-3 flex-wrap">
-          <Link href={`/properties/${propertyId}/maintenance`}>
-            <Button size="sm" variant="outline">
-               <Wrench className="h-4 w-4 mr-2" /> Maintenance
-            </Button>
-          </Link>
-          <Link href={`/properties/${propertyId}/leases`}>
-            <Button size="sm" variant="outline" className="text-blue-600 border-blue-600 hover:bg-blue-50">
-              Manage Leases ({leases.length})
-            </Button>
-          </Link>
+        
+          
           <Link href={`/properties/${propertyId}/edit`}>
             <Button size="sm">
               Edit Details
@@ -133,153 +125,65 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
           {/* Using a client component for the destructive action with confirmation */}
           <DeleteButtonWithConfirmation
             action={deleteAction.bind(null, propertyId)}
-            itemName={property.title}
+            itemName={propertyData.title}
             disabled={hasActiveLease}
             disabledTooltip="Cannot delete property with an active lease."
           />
         </div>
       </div>
 
-      <Tabs value={selectedTab} className="space-y-6" asChild>
-        <div>
-          <div className="flex flex-wrap items-center gap-3 border-b pb-3">
-            <TabsList>
+      <Tabs defaultValue={selectedTab} className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3 pb-3">
+            <TabsList className="flex flex-wrap gap-2">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="leases">Leases</TabsTrigger>
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
             </TabsList>
 
-            {leaseOptions.length > 0 && (
-              <form
-                action="/leases"
-                className="ml-auto flex items-center gap-2 text-sm"
-                method="get">
-                <label htmlFor="leaseId" className="text-gray-600">
-                  Jump to lease:
-                </label>
-                <select
-                  id="leaseId"
-                  name="id"
-                  className="rounded-md border border-slate-200 px-3 py-2 text-sm">
-                  {leaseOptions.map((lease) => (
-                    <option key={lease.id} value={lease.id}>
-                      {lease.label}
-                    </option>
-                  ))}
-                </select>
-                <Button type="submit" variant="outline" size="sm">
-                  Open
-                </Button>
-              </form>
-            )}
+              {leaseOptions.length > 0 && (
+                <form
+                  action="/leases"
+                  className="ml-auto flex items-center gap-2 text-sm"
+                  method="get">
+                  <label htmlFor="leaseId" className="text-gray-600">
+                    Jump to lease:
+                  </label>
+                  <select
+                    id="leaseId"
+                    name="id"
+                    className="rounded-md border border-slate-200 px-3 py-2 text-sm">
+                    {leaseOptions.map((lease) => (
+                      <option key={lease.id} value={lease.id}>
+                        {lease.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Button type="submit" variant="outline" size="sm">
+                    Open
+                  </Button>
+                </form>
+              )}
           </div>
 
           <TabsContent value="overview">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2 shadow-sm">
-                <CardHeader>
-                  <CardTitle>Overview</CardTitle>
-                  <CardDescription>
-                    Key property and management details.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
-                    <DetailItem icon={User} label="Landlord" value={landlordName} />
-                    <DetailItem icon={Users} label="Managers" value={managerNames} />
-                    <DetailItem icon={MapPin} label="Location" value={location || "—"} />
-                    <DetailItem
-                      icon={DollarSign}
-                      label="Default Rent"
-                      value={
-                    propertyData.defaultRentAmount != null
-                      ? `ZMW ${Number(propertyData.defaultRentAmount).toLocaleString()}`
-                      : "—"
-                  }
-                />
-                    <DetailItem icon={Building} label="Property Type" value={propertyData.type} />
-                    <div>
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
-                        <ShieldCheck className="h-3 w-3" /> Property Status
-                      </p>
-                      <Badge
-                        className={`mt-1 font-semibold ${
-                          propertyData.isOccupied
-                            ? "bg-blue-600 hover:bg-blue-700"
-                            : propertyData.isActive
-                              ? "bg-green-500 hover:bg-green-600"
-                              : "bg-red-500 hover:bg-red-600"
-                        }`}>
-                        {propertyData.isOccupied
-                          ? "Occupied"
-                          : propertyData.isActive
-                            ? "Active"
-                            : "Inactive"}
-                      </Badge>
-                    </div>
-                  </div>
-                  {(propertyData.description || propertyData.notes) && <hr className="my-4" />}
-                  {propertyData.description && (
-                    <DetailItem
-                      icon={FileText}
-                      label="Description"
-                      value={propertyData.description}
-                      isProse={true}
-                    />
-                  )}
-                  {propertyData.notes && (
-                    <DetailItem icon={FileText} label="Notes" value={propertyData.notes} isProse={true} />
-                  )}
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+             
 
-              <div className="lg:col-span-1 space-y-6">
-                <Card className="shadow-sm border-l-4 border-l-blue-500">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Occupancy</CardTitle>
-                    <Badge
-                      variant="outline"
-                      className={`font-bold ${
-                        hasActiveLease
-                          ? "text-green-600 border-green-600"
-                          : "text-amber-600 border-amber-600"
-                      }`}>
-                      {activeLeases.length} Active
-                    </Badge>
-                  </CardHeader>
-                  <CardContent>
-                    {hasActiveLease ? (
-                      <p className="text-sm text-gray-700">
-                        This property is currently occupied. View the leases section for tenant details
-                        and payment history.
-                      </p>
-                    ) : (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-700">
-                          This property is vacant. Create a lease to start tracking rental income.
-                        </p>
-                        <Link href={`/leases/new?propertyId=${propertyId}`}>
-                          <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                            Create New Lease
-                          </Button>
-                        </Link>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+              <div className="lg:col-span-2 space-y-6">
+                
 
                 <Card className="shadow-sm">
                   <CardHeader>
                     <CardTitle>{primaryLease ? "Active Lease" : "Add Lease"}</CardTitle>
                     <CardDescription>
-                      {primaryLease
+                      {hasActiveLease
                         ? "Primary lease details for this property."
                         : "Create a lease to start tracking rent."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
-                    {primaryLease ? (
+                    {hasActiveLease ? (
                       <>
                         <div className="flex justify-between">
                           <span>Reference</span>
@@ -313,7 +217,7 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm">
+                {hasActiveLease && <Card className="shadow-sm">
                   <CardHeader>
                     <CardTitle>{primaryTenant ? "Tenant" : "Add Tenant"}</CardTitle>
                     <CardDescription>
@@ -351,15 +255,17 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
                       </Link>
                     )}
                   </CardContent>
-                </Card>
+                </Card>}
 
-                <RecentPayments
-                  payments={payments}
-                  propertyId={propertyId}
-                  leases={leases}
-                  onCreatePayment={createPayment}
-                />
               </div>
+                {hasActiveLease && (
+                  <RecentPayments
+                    payments={payments}
+                    propertyId={propertyId}
+                    leases={leases}
+                    onCreatePayment={createPayment}
+                  />
+                )}
             </div>
           </TabsContent>
 
@@ -484,7 +390,6 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
               </CardContent>
             </Card>
           </TabsContent>
-        </div>
       </Tabs>
     </div>
   );
