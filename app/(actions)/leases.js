@@ -40,7 +40,7 @@ export async function createLease(data) {
       session.user.roles?.includes("landlord") ||
       session.user.roles?.includes("admin");
     data.status = data.status || (isLandlord ? "active" : "pending");
-
+    console.log("Creating lease with data:", data);
     const lease = await Lease.create(data);
     if (data?.tenant) {
       await onboardTenant(data.tenant);

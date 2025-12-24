@@ -3,10 +3,10 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import Tenant from "@/models/Tenant";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { onboardTenant } from "@/lib/onboarding/tenants";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import { onboardTenant } from "./tenantOnboard";
 
-export async function createTenant(data) {
+export async function createTenant(data) {z
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Unauthorized");
   await connectToDatabase();

@@ -11,6 +11,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select";
 import RecentPayments from "@/components/properties/recent-payments";
 import { createPayment } from "@/app/(actions)/payments";
 
@@ -35,6 +36,7 @@ import {
   Receipt,
   ListChecks,
 } from "lucide-react";
+
 
 // Server action for deletion (kept the same)
 async function deleteAction(id) {
@@ -142,27 +144,18 @@ export default async function PropertyDetailsPage({ params, searchParams }) {
             </TabsList>
 
               {leaseOptions.length > 0 && (
-                <form
-                  action="/leases"
-                  className="ml-auto flex items-center gap-2 text-sm"
-                  method="get">
-                  <label htmlFor="leaseId" className="text-gray-600">
-                    Jump to lease:
-                  </label>
-                  <select
-                    id="leaseId"
-                    name="id"
-                    className="rounded-md border border-slate-200 px-3 py-2 text-sm">
-                    {leaseOptions.map((lease) => (
-                      <option key={lease.id} value={lease.id}>
-                        {lease.label}
-                      </option>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue> Select lease</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leaseOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.label}
+                      </SelectItem>
                     ))}
-                  </select>
-                  <Button type="submit" variant="outline" size="sm">
-                    Open
-                  </Button>
-                </form>
+                  </SelectContent>
+                </Select>
               )}
           </div>
 
