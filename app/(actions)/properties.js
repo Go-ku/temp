@@ -40,7 +40,8 @@ export async function updateProperty(id, data) {
   await connectToDatabase();
   try {
     const updated = await Property.findByIdAndUpdate(id, data, { new: true });
-    return { success: true, data: updated };
+    const safeUpdated = JSON.parse(JSON.stringify(updated));
+    return { success: true, data: safeUpdated };
   } catch (err) {
     return { success: false, errors: err.errors || err.message };
   }
